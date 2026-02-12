@@ -75,5 +75,5 @@ The `Assistant` component accepts `instructions` prop from clients, making it vu
 - [x] Props for customization (instructions, placeholder)
 - [x] Security: prompt injection via instructions prop
 - [x] Subagent composition
-- [ ] Streaming tool results
+- [x] Streaming tool results
 - [ ] Agent state persistence

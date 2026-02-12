@@ -4,6 +4,7 @@ import { DefaultChatTransport, InferAgentUIMessage } from "ai";
 import { useChat } from "@ai-sdk/react";
 import { useState, useMemo, useCallback } from "react";
 import type { calculatorAgent } from "@/agents/calculator";
+import { MessageParts } from "./message-parts";
 
 type Message = InferAgentUIMessage<typeof calculatorAgent>;
 
@@ -72,9 +73,7 @@ export function Calculator({
                 : "bg-neutral-100 dark:bg-neutral-800 mr-8"
             }`}
           >
-            {message.parts.map((part, i) =>
-              part.type === "text" ? <p key={i}>{part.text}</p> : null
-            )}
+            <MessageParts message={message} />
           </div>
         ))}
         {isLoading && (
