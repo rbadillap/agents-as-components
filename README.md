@@ -18,6 +18,18 @@ Can an AI agent be treated like a React component?
 
 **The insight:** The class doesn't convert to a component - it **projects** to the client. State lives in server (tool outputs), but the client has a derived view via hooks.
 
+### What's Left to Explore
+
+React features not yet mapped to agents:
+
+| React Feature | Status | Potential Agent Equivalent |
+|---------------|--------|---------------------------|
+| lifecycle (mount, unmount) | Not explored | `onAgentReady`, `onAgentIdle` |
+| error boundary | Not explored | `<AgentErrorBoundary>` |
+| suspense | Not explored | `<Suspense>` for agent loading |
+| ref / imperative handle | Not explored | `agentRef.reset()`, `agentRef.retry()` |
+| controlled vs uncontrolled | Not explored | External control of agent state |
+
 ## The Pattern
 
 **Idea**: An AI agent can be treated like a React component - encapsulated, reusable, and composable. Complex agents use Provider pattern with hooks for derived state.
@@ -79,6 +91,7 @@ import { Orchestrator } from "@/components/orchestrator";
 
 ## Exploration Areas
 
+### Completed
 - [x] Agent as Component pattern
 - [x] Subagent composition (orchestrator delegates to specialists)
 - [x] Streaming tool results (real-time tool state in UI)
@@ -87,6 +100,13 @@ import { Orchestrator } from "@/components/orchestrator";
   - [x] Agent modes (focus/active with UI indicator)
   - [x] Provider pattern with hooks for derived state
 - [x] Shared context (orchestrator passes context to subagents)
+
+### Future (React parity)
+- [ ] Agent lifecycle (mount, unmount, ready states)
+- [ ] Error boundaries for agent failures
+- [ ] Suspense integration for loading states
+- [ ] Imperative handles (reset, retry, abort)
+- [ ] Controlled vs uncontrolled agent patterns
 
 ## Exploration Notes
 
