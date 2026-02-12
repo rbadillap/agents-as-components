@@ -8,7 +8,7 @@ import {
 } from "./context";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { User, MapPin, Loader2 } from "lucide-react";
+import { User, MapPin, Heart, Loader2 } from "lucide-react";
 
 export function OrchestratorHeader() {
   const { mode } = useAgentMode();
@@ -63,6 +63,12 @@ export function OrchestratorHeader() {
           {context.location}
         </Badge>
       )}
+      {context.preferences.map((pref) => (
+        <Badge key={pref} variant="secondary" className="gap-1 font-mono text-xs">
+          <Heart className="size-3" />
+          {pref}
+        </Badge>
+      ))}
 
       {/* Activity indicator */}
       {isLoading && (
