@@ -3,6 +3,10 @@ import { ToolLoopAgent, tool } from "ai";
 import { z } from "zod";
 import { weatherAgent } from "./weather";
 import { calculatorAgent } from "./calculator";
+import {
+  extractSessionContextFromModel,
+  formatContextPrefix,
+} from "@/lib/session-context";
 
 /**
  * Orchestrator Agent
@@ -16,8 +20,10 @@ export const delegateWeatherTool = tool({
   inputSchema: z.object({
     task: z.string().describe("The weather question to ask the specialist"),
   }),
-  execute: async ({ task }, { abortSignal }) => {
-    const result = await weatherAgent.generate({ prompt: task, abortSignal });
+  execute: async ({ task }, { abortSignal, messages }) => {
+    const context = extractSessionContextFromModel(messages);
+    const prompt = formatContextPrefix(context) + task;
+    const result = await weatherAgent.generate({ prompt, abortSignal });
     return result.text;
   },
 });
@@ -27,8 +33,10 @@ export const delegateCalculatorTool = tool({
   inputSchema: z.object({
     task: z.string().describe("The math problem to solve"),
   }),
-  execute: async ({ task }, { abortSignal }) => {
-    const result = await calculatorAgent.generate({ prompt: task, abortSignal });
+  execute: async ({ task }, { abortSignal, messages }) => {
+    const context = extractSessionContextFromModel(messages);
+    const prompt = formatContextPrefix(context) + task;
+    const result = await calculatorAgent.generate({ prompt, abortSignal });
     return result.text;
   },
 });
@@ -73,7 +81,7 @@ Routing:
 Memory:
 - When the user shares personal info (name, preferences, locations), use rememberFact to store it
 - Reference remembered facts naturally in your responses
-- Include relevant context when delegating to specialists (e.g., "User Ronny wants weather for Madrid")
+- Context is automatically injected to specialists based on remembered facts
 
 Mode Signaling:
 - Use setMode('focus') when you need to gather more information before answering (asking clarifying questions, multi-step research)

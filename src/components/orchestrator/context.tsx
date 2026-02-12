@@ -9,6 +9,10 @@ import {
 } from "ai";
 import { useChat } from "@ai-sdk/react";
 import type { orchestratorAgent } from "@/agents/orchestrator";
+import {
+  extractSessionContext,
+  SessionContext,
+} from "@/lib/session-context";
 
 type Message = InferAgentUIMessage<typeof orchestratorAgent>;
 
@@ -30,6 +34,7 @@ const OrchestratorContext = createContext<OrchestratorContextValue | null>(
   null
 );
 const AgentModeContext = createContext<AgentMode | null>(null);
+const SessionContextContext = createContext<SessionContext | null>(null);
 
 export function OrchestratorProvider({ children }: { children: ReactNode }) {
   const transport = useMemo(
@@ -64,6 +69,12 @@ export function OrchestratorProvider({ children }: { children: ReactNode }) {
     return { mode: "active", reason: null, isDefault: true };
   }, [messages]);
 
+  // Derive session context from messages - extract all rememberFact outputs
+  const sessionContext = useMemo<SessionContext>(
+    () => extractSessionContext(messages),
+    [messages]
+  );
+
   const orchestratorValue = useMemo(
     () => ({ messages, sendMessage, status, isLoading }),
     [messages, sendMessage, status, isLoading]
@@ -72,7 +83,9 @@ export function OrchestratorProvider({ children }: { children: ReactNode }) {
   return (
     <OrchestratorContext.Provider value={orchestratorValue}>
       <AgentModeContext.Provider value={agentMode}>
-        {children}
+        <SessionContextContext.Provider value={sessionContext}>
+          {children}
+        </SessionContextContext.Provider>
       </AgentModeContext.Provider>
     </OrchestratorContext.Provider>
   );
@@ -91,6 +104,17 @@ export function useAgentMode() {
   const context = useContext(AgentModeContext);
   if (!context) {
     throw new Error("useAgentMode must be used within OrchestratorProvider");
+  }
+  return context;
+}
+
+// Separate hook - only re-renders when sessionContext changes
+export function useSessionContext() {
+  const context = useContext(SessionContextContext);
+  if (!context) {
+    throw new Error(
+      "useSessionContext must be used within OrchestratorProvider"
+    );
   }
   return context;
 }

@@ -95,3 +95,29 @@ src/components/orchestrator/
 ```
 
 Usage: simple `<Orchestrator />` or composable with Provider + individual pieces.
+
+### Shared Context (Orchestrator → Subagents)
+
+Context is shared deterministically (code, not LLM) from orchestrator to subagents.
+
+```
+src/lib/session-context.ts           ← Shared extraction logic
+  ├─ extractSessionContext(messages) → { name, location, preferences, other }
+  └─ formatContextPrefix(context)    → "[User: Ronny | Location: Madrid] "
+```
+
+**Server-side injection** (in delegate tools):
+```ts
+execute: async ({ task }, { abortSignal, messages }) => {
+  const context = extractSessionContext(messages);
+  const prompt = formatContextPrefix(context) + task;
+  const result = await subAgent.generate({ prompt, abortSignal });
+  return result.text;
+}
+```
+
+**Client-side hook**:
+```ts
+const context = useSessionContext();
+// { name: "Ronny", location: "Madrid", preferences: [], other: [] }
+```

@@ -123,3 +123,51 @@ function ModeIndicator() {
 ```
 
 This enables standalone components that access agent state without prop drilling.
+
+## Shared Context Between Agents
+
+When an orchestrator delegates to subagents, session context can be shared deterministically (code, not LLM).
+
+### Using `extractSessionContext`
+
+The `src/lib/session-context.ts` module provides shared extraction logic:
+
+```ts
+import { extractSessionContext, formatContextPrefix } from "@/lib/session-context";
+
+// In a delegate tool
+const delegateTool = tool({
+  description: "Delegate to specialist",
+  inputSchema: z.object({ task: z.string() }),
+  execute: async ({ task }, { abortSignal, messages }) => {
+    // Extract context from message history
+    const context = extractSessionContext(messages);
+    // Format as prefix: "[User: Ronny | Location: Madrid] "
+    const prompt = formatContextPrefix(context) + task;
+    const result = await subAgent.generate({ prompt, abortSignal });
+    return result.text;
+  },
+});
+```
+
+### Client-side Hook
+
+Components can access session context via the `useSessionContext` hook:
+
+```tsx
+import { useSessionContext } from "@/components/orchestrator";
+
+function MyComponent() {
+  const context = useSessionContext();
+  // { name: "Ronny", location: "Madrid", preferences: [], other: [] }
+}
+```
+
+### Pattern Summary
+
+```
+Tool Output (rememberFact) → extractSessionContext(messages) → Server: inject to subagent
+                                                             → Client: useSessionContext()
+```
+
+This pattern is deterministic (no LLM involved in context extraction) and consistent with the existing `setMode` → `useAgentMode()` pattern.

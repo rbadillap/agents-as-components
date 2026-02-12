@@ -70,7 +70,7 @@ import { Orchestrator } from "@/components/orchestrator";
   - [x] Session memory (agent remembers context during conversation)
   - [x] Agent modes (focus/active with UI indicator)
   - [x] Provider pattern with hooks for derived state
-- [ ] Shared context (orchestrator passes context to subagents)
+- [x] Shared context (orchestrator passes context to subagents)
 
 ## Exploration Notes
 
@@ -109,7 +109,22 @@ When an agent needs derived state (like current mode), the component evolves int
 </OrchestratorProvider>
 ```
 
-Hooks (`useOrchestrator`, `useAgentMode`) enable standalone components that access agent state without prop drilling.
+Hooks (`useOrchestrator`, `useAgentMode`, `useSessionContext`) enable standalone components that access agent state without prop drilling.
+
+### Shared Context via Deterministic Extraction
+
+When the orchestrator delegates to subagents, session context (name, location, preferences) is extracted deterministically from message history and injected into the subagent prompt:
+
+```
+User: "Me llamo Ronny"
+Orchestrator: [rememberFact] → stored in history
+
+User: "¿Clima en Madrid?"
+Orchestrator: [delegateWeather] → extracts context → "[User: Ronny] clima en Madrid"
+WeatherAgent: "Ronny, en Madrid hay 18°C"
+```
+
+The same extraction logic (`extractSessionContext`) works on both server (delegate tools) and client (`useSessionContext` hook).
 
 **Limitations:**
 - State only lasts the session (lost on page refresh)

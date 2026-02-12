@@ -1,14 +1,21 @@
 "use client";
 
 // Re-export all pieces for composable usage
-export { OrchestratorProvider, useOrchestrator, useAgentMode } from "./context";
+export {
+  OrchestratorProvider,
+  useOrchestrator,
+  useAgentMode,
+  useSessionContext,
+} from "./context";
 export { ModeIndicator } from "./mode-indicator";
+export { SessionIndicator } from "./session-indicator";
 export { OrchestratorMessages } from "./messages";
 export { OrchestratorInput } from "./input";
 
 // Composed component for simple usage
 import { OrchestratorProvider } from "./context";
 import { ModeIndicator } from "./mode-indicator";
+import { SessionIndicator } from "./session-indicator";
 import { OrchestratorMessages } from "./messages";
 import { OrchestratorInput } from "./input";
 
@@ -40,6 +47,7 @@ export function Orchestrator({ placeholder, className }: OrchestratorProps) {
         <OrchestratorMessages />
         <div className="mt-4 flex items-center gap-2">
           <ModeIndicator />
+          <SessionIndicator />
         </div>
         <div className="mt-2">
           <OrchestratorInput placeholder={placeholder} />
