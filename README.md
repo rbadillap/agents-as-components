@@ -2,6 +2,22 @@
 
 Exploring composable AI agents with Vercel AI SDK.
 
+## The Analogy
+
+Can an AI agent be treated like a React component?
+
+| TypeScript (OOP) | React | AI SDK Agents |
+|------------------|-------|---------------|
+| `class` | `function Component` | `ToolLoopAgent` |
+| `properties` | `props` | `instructions`, `model` |
+| `methods` | event handlers | `tools` |
+| `this.state` | `useState` / Context | tool outputs in history |
+| `extends` | composition | subagent delegation |
+| `new Instance()` | `<Component />` | `useChat` + Provider |
+| getter/derived | `useMemo` | `useAgentMode()`, `useSessionContext()` |
+
+**The insight:** The class doesn't convert to a component - it **projects** to the client. State lives in server (tool outputs), but the client has a derived view via hooks.
+
 ## The Pattern
 
 **Idea**: An AI agent can be treated like a React component - encapsulated, reusable, and composable. Complex agents use Provider pattern with hooks for derived state.
