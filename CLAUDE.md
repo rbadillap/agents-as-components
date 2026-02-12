@@ -24,11 +24,18 @@ export const myAgent = new ToolLoopAgent({
 });
 ```
 
-**Component** (client):
+**Component with Provider** (client):
 ```tsx
-const { messages, sendMessage, status } = useChat<Message>({
-  transport: new DefaultChatTransport({ api: "/api/agents/my-agent" }),
-});
+// Provider encapsulates useChat, exposes hooks
+export function MyAgentProvider({ children }) {
+  const { messages, sendMessage, status } = useChat<Message>({ transport });
+  const derivedState = useMemo(() => deriveFromMessages(messages), [messages]);
+  return <Context.Provider value={{ messages, sendMessage, derivedState }}>{children}</Context.Provider>;
+}
+
+// Hooks for accessing agent state
+export const useMyAgent = () => useContext(Context);
+export const useDerivedState = () => useMyAgent().derivedState;
 ```
 
 **Subagent delegation** (tool that calls another agent):
@@ -51,25 +58,40 @@ const delegateTool = tool({
 ## Environment
 - `AI_GATEWAY_API_KEY` - Vercel AI Gateway key
 
-## Session Memory Pattern
+## State Patterns
 
-AI SDK provides `experimental_context`, `onStepFinish`, and `onFinish` for state management, but these are **per-request** - they don't persist between HTTP requests.
+### Tool Output as State
 
-**Solution**: Memory via tool + message history
+Agent state (memory, modes) is stored via tool outputs in message history. The client derives state by scanning messages for specific tool results.
 
 ```ts
-const rememberFactTool = tool({
-  description: "Remember an important fact the user shared",
-  inputSchema: z.object({
-    category: z.enum(["name", "preference", "location", "other"]),
-    fact: z.string(),
-  }),
-  execute: async ({ category, fact }) => {
-    return { stored: true, category, fact };
-  },
+// Server: tool stores state in its output
+const setModeTool = tool({
+  inputSchema: z.object({ mode: z.enum(["active", "focus"]), reason: z.string() }),
+  execute: async ({ mode, reason }) => ({ mode, reason, timestamp: Date.now() }),
 });
+
+// Client: derive state from messages
+const agentMode = useMemo(() => {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const part = findToolOutput(messages[i], "setMode");
+    if (part) return { mode: part.output.mode, reason: part.output.reason };
+  }
+  return { mode: "active", reason: null }; // default
+}, [messages]);
 ```
 
-The fact is stored in the tool result, which lives in the message history. The LLM "sees" it in subsequent turns because the full history is re-sent with each request.
+### Composable Components via Folder Structure
 
-This pattern keeps memory **implicit** (in history) rather than requiring external storage.
+Complex agents use a folder with Provider pattern:
+
+```
+src/components/orchestrator/
+├── context.tsx        # Provider + useOrchestrator + useAgentMode hooks
+├── messages.tsx       # <OrchestratorMessages /> uses hook
+├── input.tsx          # <OrchestratorInput /> uses hook
+├── mode-indicator.tsx # <ModeIndicator /> uses useAgentMode()
+└── index.tsx          # Barrel exports + composed <Orchestrator />
+```
+
+Usage: simple `<Orchestrator />` or composable with Provider + individual pieces.

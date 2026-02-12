@@ -75,11 +75,35 @@ function ToolError({
   );
 }
 
-function RememberedFact({ output }: { output: { category: string; fact: string } }) {
+function RememberedFact({
+  output,
+}: {
+  output: { category: string; fact: string };
+}) {
   return (
     <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 italic my-1">
       <span className="text-blue-500">💭</span>
-      <span>Remembered ({output.category}): {output.fact}</span>
+      <span>
+        Remembered ({output.category}): {output.fact}
+      </span>
+    </div>
+  );
+}
+
+function ModeChange({ output }: { output: { mode: string; reason: string } }) {
+  const isFocus = output.mode === "focus";
+  return (
+    <div
+      className={`flex items-center gap-2 text-xs italic my-1 ${
+        isFocus
+          ? "text-amber-600 dark:text-amber-400"
+          : "text-green-600 dark:text-green-400"
+      }`}
+    >
+      <span>{isFocus ? "🔍" : "✓"}</span>
+      <span>
+        Switched to {output.mode}: {output.reason}
+      </span>
     </div>
   );
 }
@@ -92,6 +116,12 @@ export function ToolInvocation({ part }: ToolInvocationProps) {
   if (toolName === "rememberFact" && state === "output-available") {
     const output = part.output as { category: string; fact: string };
     return <RememberedFact output={output} />;
+  }
+
+  // Special rendering for setMode tool
+  if (toolName === "setMode" && state === "output-available") {
+    const output = part.output as { mode: string; reason: string };
+    return <ModeChange output={output} />;
   }
 
   switch (state) {

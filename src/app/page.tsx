@@ -62,32 +62,36 @@ export default function Home() {
           <pre className="bg-neutral-100 dark:bg-neutral-900 p-4 rounded-lg overflow-x-auto text-sm">
             {`src/
 ├── agents/
-│   ├── weather.ts       # ToolLoopAgent + tools
+│   ├── weather.ts              # ToolLoopAgent + tools
 │   ├── calculator.ts
-│   └── orchestrator.ts  # Subagent composition
+│   └── orchestrator.ts         # Subagent composition + modes
 ├── components/
-│   ├── weather.tsx      # "use client" + useChat
+│   ├── weather.tsx             # "use client" + useChat
 │   ├── calculator.tsx
-│   └── orchestrator.tsx
+│   └── orchestrator/           # Provider pattern
+│       ├── context.tsx         # Provider + hooks
+│       ├── messages.tsx        # Uses useOrchestrator()
+│       ├── input.tsx           # Uses useOrchestrator()
+│       ├── mode-indicator.tsx  # Uses useAgentMode()
+│       └── index.tsx           # Barrel + composed component
 └── app/api/agents/
-    ├── weather/route.ts
-    ├── calculator/route.ts
-    └── orchestrator/route.ts`}
+    └── {name}/route.ts`}
           </pre>
         </section>
 
-        {/* Component Props */}
+        {/* Usage Patterns */}
         <section className="mt-8">
-          <h2 className="font-semibold mb-4">Component Props</h2>
+          <h2 className="font-semibold mb-4">Usage Patterns</h2>
           <pre className="bg-neutral-100 dark:bg-neutral-900 p-4 rounded-lg overflow-x-auto text-sm">
-            {`<Weather
-  placeholder="Custom input placeholder..."
-  className="custom-styles"
-/>
+            {`// Simple (pre-composed)
+<Orchestrator className="flex flex-col h-full" />
 
-<Calculator placeholder="Enter a problem..." />
-
-<Orchestrator className="flex flex-col h-full" />`}
+// Composable (with hooks)
+<OrchestratorProvider>
+  <Header><ModeIndicator /></Header>
+  <OrchestratorMessages />
+  <OrchestratorInput />
+</OrchestratorProvider>`}
           </pre>
         </section>
       </div>

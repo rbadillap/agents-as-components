@@ -47,6 +47,19 @@ export const rememberFactTool = tool({
   },
 });
 
+export const setModeTool = tool({
+  description: `Switch your operational mode to signal your current state.
+Use 'focus' when: asking clarifying questions, gathering information you need, multi-step research.
+Use 'active' when: providing final answers, completing tasks, normal conversation flow.`,
+  inputSchema: z.object({
+    mode: z.enum(["active", "focus"]).default("active"),
+    reason: z.string().describe("Brief reason for the mode change"),
+  }),
+  execute: async ({ mode, reason }) => {
+    return { mode, reason, timestamp: Date.now() };
+  },
+});
+
 export const orchestratorAgent = new ToolLoopAgent({
   id: "orchestrator",
   model: gateway("anthropic/claude-sonnet-4"),
@@ -60,12 +73,18 @@ Routing:
 Memory:
 - When the user shares personal info (name, preferences, locations), use rememberFact to store it
 - Reference remembered facts naturally in your responses
-- Include relevant context when delegating to specialists (e.g., "User Carlos wants weather for Madrid")
+- Include relevant context when delegating to specialists (e.g., "User Ronny wants weather for Madrid")
+
+Mode Signaling:
+- Use setMode('focus') when you need to gather more information before answering (asking clarifying questions, multi-step research)
+- Use setMode('active') when providing final answers or completing tasks
+- This helps the UI show the user your current state
 
 Always provide a unified, coherent response to the user.`,
   tools: {
     delegateWeather: delegateWeatherTool,
     delegateCalculator: delegateCalculatorTool,
     rememberFact: rememberFactTool,
+    setMode: setModeTool,
   },
 });

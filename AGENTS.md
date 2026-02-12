@@ -4,9 +4,14 @@
 
 Each agent has two parts:
 1. **Server** (`src/agents/*.ts`) - ToolLoopAgent with tools
-2. **Client** (`src/components/*.tsx`) - React component with useChat
+2. **Client** (`src/components/`) - React component(s) with Provider pattern
+
+For simple agents: single file component with useChat.
+For complex agents: folder with Provider, hooks, and composable pieces.
 
 ## Creating a New Agent
+
+### Simple Agent (single file)
 
 1. Create `src/agents/{name}.ts`:
 ```ts
@@ -56,35 +61,65 @@ export async function POST(request: Request) {
 }
 ```
 
-## Current Agents
-- `weather` - Weather lookup with temperature conversion (simple, stateless)
-- `calculator` - Math calculations (simple, stateless)
-- `orchestrator` - Delegates to subagents + session memory
+### Complex Agent (folder with Provider)
 
-## Session Memory
+For agents with derived state or composable UI, use the folder pattern:
 
-The orchestrator implements explicit memory via a `rememberFact` tool:
-
-```ts
-const rememberFactTool = tool({
-  description: "Remember an important fact the user shared",
-  inputSchema: z.object({
-    category: z.enum(["name", "preference", "location", "other"]),
-    fact: z.string(),
-  }),
-  execute: async ({ category, fact }) => ({ stored: true, category, fact }),
-});
+```
+src/components/{name}/
+├── context.tsx        # Provider + hooks
+├── messages.tsx       # Message display component
+├── input.tsx          # Input component
+└── index.tsx          # Barrel exports + composed component
 ```
 
-**Why not use AI SDK's built-in options?**
+See `src/components/orchestrator/` for the reference implementation.
 
-The SDK provides `experimental_context`, `onStepFinish`, and `onFinish` - but these are **per-request** callbacks. They reset with each HTTP request, so data doesn't persist across conversation turns.
+## Current Agents
 
-**How the tool approach works:**
-1. Agent detects important info ("My name is Carlos")
-2. Calls `rememberFact({ category: "name", fact: "Carlos" })`
-3. Tool result is stored in message history
-4. On next request, full history is re-sent → LLM "sees" the remembered fact
-5. Agent uses it naturally ("Carlos, the weather in Madrid is...")
+| Agent | Type | Features |
+|-------|------|----------|
+| `weather` | Simple | Weather lookup, temperature conversion |
+| `calculator` | Simple | Math calculations |
+| `orchestrator` | Complex | Subagent delegation, memory, modes, Provider pattern |
 
-**Architecture decision:** Keep subagents simple/stateless, orchestrator handles complexity (routing + memory).
+## Agent State via Tool Outputs
+
+Agent state persists via tool outputs in message history. The client derives state by scanning messages.
+
+**Memory** (`rememberFact` tool):
+```ts
+execute: async ({ category, fact }) => ({ stored: true, category, fact })
+```
+
+**Modes** (`setMode` tool):
+```ts
+execute: async ({ mode, reason }) => ({ mode, reason, timestamp: Date.now() })
+```
+
+The client hook derives current mode:
+```ts
+const agentMode = useMemo(() => {
+  // Scan messages backwards for most recent setMode output
+  for (let i = messages.length - 1; i >= 0; i--) { ... }
+  return { mode: "active", reason: null, isDefault: true };
+}, [messages]);
+```
+
+## Hooks Pattern
+
+Complex agents expose hooks for accessing state:
+
+```tsx
+// From context.tsx
+export const useOrchestrator = () => useContext(OrchestratorContext);
+export const useAgentMode = () => useOrchestrator().agentMode;
+
+// Usage in any child component
+function ModeIndicator() {
+  const { mode, reason } = useAgentMode();
+  return <div>{mode}: {reason}</div>;
+}
+```
+
+This enables standalone components that access agent state without prop drilling.

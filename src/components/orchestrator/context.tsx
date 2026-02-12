@@ -1,0 +1,89 @@
+"use client";
+
+import { createContext, useContext, useMemo, ReactNode } from "react";
+import {
+  DefaultChatTransport,
+  InferAgentUIMessage,
+  isToolUIPart,
+  getToolName,
+} from "ai";
+import { useChat } from "@ai-sdk/react";
+import type { orchestratorAgent } from "@/agents/orchestrator";
+
+type Message = InferAgentUIMessage<typeof orchestratorAgent>;
+
+type AgentMode = {
+  mode: "active" | "focus";
+  reason: string | null;
+  isDefault: boolean;
+};
+
+type OrchestratorContextValue = {
+  messages: Message[];
+  sendMessage: (params: { text: string }) => void;
+  status: string;
+  isLoading: boolean;
+  agentMode: AgentMode;
+};
+
+const OrchestratorContext = createContext<OrchestratorContextValue | null>(
+  null
+);
+
+export function OrchestratorProvider({ children }: { children: ReactNode }) {
+  const transport = useMemo(
+    () => new DefaultChatTransport({ api: "/api/agents/orchestrator" }),
+    []
+  );
+
+  const { messages, sendMessage, status } = useChat<Message>({ transport });
+  const isLoading = status === "submitted" || status === "streaming";
+
+  // Derive mode from messages - scan backwards for most recent setMode tool call
+  const agentMode = useMemo<AgentMode>(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
+      if (message.role !== "assistant") continue;
+
+      for (let j = message.parts.length - 1; j >= 0; j--) {
+        const part = message.parts[j];
+        if (
+          isToolUIPart(part) &&
+          getToolName(part) === "setMode" &&
+          part.state === "output-available"
+        ) {
+          const output = part.output as {
+            mode: "active" | "focus";
+            reason: string;
+          };
+          return { mode: output.mode, reason: output.reason, isDefault: false };
+        }
+      }
+    }
+    return { mode: "active", reason: null, isDefault: true };
+  }, [messages]);
+
+  const value = useMemo(
+    () => ({ messages, sendMessage, status, isLoading, agentMode }),
+    [messages, sendMessage, status, isLoading, agentMode]
+  );
+
+  return (
+    <OrchestratorContext.Provider value={value}>
+      {children}
+    </OrchestratorContext.Provider>
+  );
+}
+
+export function useOrchestrator() {
+  const context = useContext(OrchestratorContext);
+  if (!context) {
+    throw new Error("useOrchestrator must be used within OrchestratorProvider");
+  }
+  return context;
+}
+
+export function useAgentMode() {
+  const { agentMode } = useOrchestrator();
+  return agentMode;
+}
