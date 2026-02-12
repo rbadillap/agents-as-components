@@ -50,3 +50,26 @@ const delegateTool = tool({
 
 ## Environment
 - `AI_GATEWAY_API_KEY` - Vercel AI Gateway key
+
+## Session Memory Pattern
+
+AI SDK provides `experimental_context`, `onStepFinish`, and `onFinish` for state management, but these are **per-request** - they don't persist between HTTP requests.
+
+**Solution**: Memory via tool + message history
+
+```ts
+const rememberFactTool = tool({
+  description: "Remember an important fact the user shared",
+  inputSchema: z.object({
+    category: z.enum(["name", "preference", "location", "other"]),
+    fact: z.string(),
+  }),
+  execute: async ({ category, fact }) => {
+    return { stored: true, category, fact };
+  },
+});
+```
+
+The fact is stored in the tool result, which lives in the message history. The LLM "sees" it in subsequent turns because the full history is re-sent with each request.
+
+This pattern keeps memory **implicit** (in history) rather than requiring external storage.

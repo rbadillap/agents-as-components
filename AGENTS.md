@@ -57,6 +57,34 @@ export async function POST(request: Request) {
 ```
 
 ## Current Agents
-- `weather` - Weather lookup with temperature conversion
-- `calculator` - Math calculations
-- `orchestrator` - Delegates to weather/calculator subagents
+- `weather` - Weather lookup with temperature conversion (simple, stateless)
+- `calculator` - Math calculations (simple, stateless)
+- `orchestrator` - Delegates to subagents + session memory
+
+## Session Memory
+
+The orchestrator implements explicit memory via a `rememberFact` tool:
+
+```ts
+const rememberFactTool = tool({
+  description: "Remember an important fact the user shared",
+  inputSchema: z.object({
+    category: z.enum(["name", "preference", "location", "other"]),
+    fact: z.string(),
+  }),
+  execute: async ({ category, fact }) => ({ stored: true, category, fact }),
+});
+```
+
+**Why not use AI SDK's built-in options?**
+
+The SDK provides `experimental_context`, `onStepFinish`, and `onFinish` - but these are **per-request** callbacks. They reset with each HTTP request, so data doesn't persist across conversation turns.
+
+**How the tool approach works:**
+1. Agent detects important info ("My name is Carlos")
+2. Calls `rememberFact({ category: "name", fact: "Carlos" })`
+3. Tool result is stored in message history
+4. On next request, full history is re-sent → LLM "sees" the remembered fact
+5. Agent uses it naturally ("Carlos, the weather in Madrid is...")
+
+**Architecture decision:** Keep subagents simple/stateless, orchestrator handles complexity (routing + memory).

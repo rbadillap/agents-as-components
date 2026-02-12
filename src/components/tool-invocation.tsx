@@ -75,9 +75,24 @@ function ToolError({
   );
 }
 
+function RememberedFact({ output }: { output: { category: string; fact: string } }) {
+  return (
+    <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 italic my-1">
+      <span className="text-blue-500">💭</span>
+      <span>Remembered ({output.category}): {output.fact}</span>
+    </div>
+  );
+}
+
 export function ToolInvocation({ part }: ToolInvocationProps) {
   const toolName = getToolName(part);
   const state = part.state;
+
+  // Special rendering for rememberFact tool
+  if (toolName === "rememberFact" && state === "output-available") {
+    const output = part.output as { category: string; fact: string };
+    return <RememberedFact output={output} />;
+  }
 
   switch (state) {
     case "input-streaming":

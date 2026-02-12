@@ -62,6 +62,30 @@ import { Orchestrator } from "@/components/orchestrator";
 - [x] Subagent composition (orchestrator delegates to specialists)
 - [x] Streaming tool results (real-time tool state in UI)
 - [ ] Agent state
-  - [ ] Session memory (agent remembers context during conversation)
+  - [x] Session memory (agent remembers context during conversation)
   - [ ] Agent modes (state machine: onboarding → active → done)
   - [ ] Shared context (orchestrator passes context to subagents)
+
+## Exploration Notes
+
+### Session Memory: A Different Path
+
+AI SDK provides extension points for state management:
+- `experimental_context` - mutable object flowing through execution
+- `onStepFinish` / `onFinish` - callbacks after LLM steps
+
+**The discovery:** These are **per-request** - they don't persist between HTTP requests. Each API call starts fresh.
+
+**The solution:** Memory via tool. The agent calls a `rememberFact` tool when it detects important info. The tool result lives in the message history, which is re-sent with every request. The LLM "sees" remembered facts because they're part of the conversation.
+
+```
+User: "My name is Carlos"
+Agent: [calls rememberFact] → stored in history
+User: "Weather in Madrid?"
+Agent: [sees rememberFact result in history] → "Carlos, it's 18°C in Madrid"
+```
+
+**Limitations:**
+- Memory only lasts the session (lost on page refresh)
+- Facts live in message history, not external storage
+- Exploratory pattern, not production-ready
