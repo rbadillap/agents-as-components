@@ -23,12 +23,13 @@ type OrchestratorContextValue = {
   sendMessage: (params: { text: string }) => void;
   status: string;
   isLoading: boolean;
-  agentMode: AgentMode;
 };
 
+// Separate contexts to avoid unnecessary re-renders (rerender-derived-state)
 const OrchestratorContext = createContext<OrchestratorContextValue | null>(
   null
 );
+const AgentModeContext = createContext<AgentMode | null>(null);
 
 export function OrchestratorProvider({ children }: { children: ReactNode }) {
   const transport = useMemo(
@@ -63,14 +64,16 @@ export function OrchestratorProvider({ children }: { children: ReactNode }) {
     return { mode: "active", reason: null, isDefault: true };
   }, [messages]);
 
-  const value = useMemo(
-    () => ({ messages, sendMessage, status, isLoading, agentMode }),
-    [messages, sendMessage, status, isLoading, agentMode]
+  const orchestratorValue = useMemo(
+    () => ({ messages, sendMessage, status, isLoading }),
+    [messages, sendMessage, status, isLoading]
   );
 
   return (
-    <OrchestratorContext.Provider value={value}>
-      {children}
+    <OrchestratorContext.Provider value={orchestratorValue}>
+      <AgentModeContext.Provider value={agentMode}>
+        {children}
+      </AgentModeContext.Provider>
     </OrchestratorContext.Provider>
   );
 }
@@ -83,7 +86,11 @@ export function useOrchestrator() {
   return context;
 }
 
+// Separate hook - only re-renders when agentMode changes
 export function useAgentMode() {
-  const { agentMode } = useOrchestrator();
-  return agentMode;
+  const context = useContext(AgentModeContext);
+  if (!context) {
+    throw new Error("useAgentMode must be used within OrchestratorProvider");
+  }
+  return context;
 }
