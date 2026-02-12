@@ -62,3 +62,6 @@ import { Orchestrator } from "@/components/orchestrator";
 - [x] Subagent composition (orchestrator delegates to specialists)
 - [x] Streaming tool results (real-time tool state in UI)
 - [ ] Agent state
+  - [ ] Session memory (agent remembers context during conversation)
+  - [ ] Agent modes (state machine: onboarding → active → done)
+  - [ ] Shared context (orchestrator passes context to subagents)
