@@ -171,3 +171,42 @@ Tool Output (rememberFact) → extractSessionContext(messages) → Server: injec
 ```
 
 This pattern is deterministic (no LLM involved in context extraction) and consistent with the existing `setMode` → `useAgentMode()` pattern.
+
+## External References
+
+### Multi-Agent Patterns in the Ecosystem
+
+| Pattern | Source | When to use |
+|---------|--------|-------------|
+| **Handoff** | [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/multi_agent/) | Dynamic routing between equal agents |
+| **AgentTool** | [Google ADK](https://google.github.io/adk-docs/agents/multi-agents/) | Wrap agent as callable tool |
+| **Architect-Builder** | [Spring AI](https://gaetanopiazzolla.github.io/java/ai/2026/02/09/sub-agent-pattern.html) | Expensive model plans, cheap model executes |
+| **Connected Agents** | [Azure AI Foundry](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns) | Spawning child agents for subtasks |
+
+### This Project's Approach
+
+We use **Orchestrator with Deterministic Context Injection**:
+
+```
+Orchestrator (owns context via rememberFact)
+    │
+    ├─ extractSessionContextFromModel(messages)  ← code, not LLM
+    │
+    └─ formatContextPrefix(context) + task → Subagent
+```
+
+**Trade-offs:**
+
+| Aspect | Our approach | LLM-based passing |
+|--------|--------------|-------------------|
+| Reliability | Deterministic, testable | Can hallucinate or forget |
+| Flexibility | Fixed schema (name, location, etc.) | Free-form context |
+| Performance | No extra LLM calls | Requires LLM to summarize |
+| Debugging | Inspect extracted context directly | Hard to trace what was passed |
+
+### When to Choose What
+
+- **Use deterministic extraction** when context has known structure (user profile, preferences)
+- **Use LLM-based passing** when context is unstructured or needs summarization
+- **Use handoff pattern** when agents are peers, not orchestrator→specialist
+- **Use AgentTool wrapping** when you want the parent to treat subagent as black box

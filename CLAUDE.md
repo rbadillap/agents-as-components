@@ -121,3 +121,35 @@ execute: async ({ task }, { abortSignal, messages }) => {
 const context = useSessionContext();
 // { name: "Ronny", location: "Madrid", preferences: [], other: [] }
 ```
+
+## Pattern Comparison
+
+### What exists in the ecosystem
+
+| Solution | What it does | Gap |
+|----------|--------------|-----|
+| **AI SDK Elements** | UI components for displaying agent config, tools, metrics | Presentation only, no runtime architecture |
+| **OpenAI Agents SDK** | Handoff-based delegation between agents | Python-only, no React integration |
+| **Google ADK** | `AgentTool` wrapping for subagent calls | No state-via-tool-output pattern |
+| **Spring AI** | Architect-Builder pattern with structured blueprints | Java, no client-side hooks |
+
+### What's unique here
+
+| Pattern | This project | Others |
+|---------|--------------|--------|
+| **State storage** | Tool outputs in message history | External DB or per-request context |
+| **Context sharing** | Deterministic extraction (code) | LLM-based passing or manual injection |
+| **Client derivation** | Hooks scan same message history | Separate state management |
+| **Server-client parity** | Same extraction logic both sides | Different implementations |
+
+### Key insight
+
+```
+Tool Output as State + Deterministic Extraction + Shared Logic (server/client)
+```
+
+This combination enables:
+1. No external state storage needed
+2. Context sharing without LLM hallucination risk
+3. UI reflects exact same state server computed
+4. Extraction logic is testable, predictable

@@ -129,3 +129,19 @@ The same extraction logic (`extractSessionContext`) works on both server (delega
 **Limitations:**
 - State only lasts the session (lost on page refresh)
 - Lives in message history, not external storage
+
+## What Makes This Unique
+
+This exploration combines patterns not found together elsewhere:
+
+- **Tool Output as State** - No external database; state lives in message history and survives across requests
+- **Deterministic Context Sharing** - Code extracts context, not LLM; no hallucination risk when passing to subagents
+- **Server-Client Parity** - Same extraction logic (`extractSessionContext`) runs on both sides
+- **Composable Runtime** - Not just UI components, but full server agent + client hooks + shared logic
+
+**Comparison:**
+- [AI SDK Elements](https://elements.ai-sdk.dev) provides UI components for display, but not runtime architecture
+- [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/multi_agent/) has delegation patterns, but Python-only
+- [Google ADK](https://google.github.io/adk-docs/agents/multi-agents/) wraps agents as tools, but no state-via-tool-output
+
+The combination of these patterns enables agents that remember, share context deterministically, and have UI that reflects exact server state.
