@@ -9,8 +9,6 @@ import { MessageParts } from "./message-parts";
 type Message = InferAgentUIMessage<typeof weatherAgent>;
 
 type WeatherProps = {
-  /** Custom instructions to override the default agent behavior */
-  instructions?: string;
   /** Placeholder text for the input field */
   placeholder?: string;
   /** Additional CSS classes */
@@ -26,25 +24,17 @@ type WeatherProps = {
  * <Weather />
  *
  * @example
- * <Weather
- *   instructions="You are a weather expert. Always include humidity."
- *   placeholder="Enter a city..."
- * />
+ * <Weather placeholder="Enter a city..." />
  */
 export function Weather({
-  instructions,
   placeholder = "Ask about weather...",
   className,
 }: WeatherProps) {
   const [input, setInput] = useState("");
 
   const transport = useMemo(
-    () =>
-      new DefaultChatTransport({
-        api: "/api/agents/weather",
-        body: instructions ? { instructions } : undefined,
-      }),
-    [instructions]
+    () => new DefaultChatTransport({ api: "/api/agents/weather" }),
+    []
   );
 
   const { messages, sendMessage, status } = useChat<Message>({ transport });

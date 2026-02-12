@@ -9,8 +9,6 @@ import { MessageParts } from "./message-parts";
 type Message = InferAgentUIMessage<typeof calculatorAgent>;
 
 type CalculatorProps = {
-  /** Custom instructions to override the default agent behavior */
-  instructions?: string;
   /** Placeholder text for the input field */
   placeholder?: string;
   /** Additional CSS classes */
@@ -26,25 +24,17 @@ type CalculatorProps = {
  * <Calculator />
  *
  * @example
- * <Calculator
- *   instructions="You are a math tutor. Explain each step clearly."
- *   placeholder="Enter a math problem..."
- * />
+ * <Calculator placeholder="Enter a math problem..." />
  */
 export function Calculator({
-  instructions,
   placeholder = "Ask a math question...",
   className,
 }: CalculatorProps) {
   const [input, setInput] = useState("");
 
   const transport = useMemo(
-    () =>
-      new DefaultChatTransport({
-        api: "/api/agents/calculator",
-        body: instructions ? { instructions } : undefined,
-      }),
-    [instructions]
+    () => new DefaultChatTransport({ api: "/api/agents/calculator" }),
+    []
   );
 
   const { messages, sendMessage, status } = useChat<Message>({ transport });

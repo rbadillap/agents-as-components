@@ -9,8 +9,6 @@ import { MessageParts } from "./message-parts";
 type Message = InferAgentUIMessage<typeof orchestratorAgent>;
 
 type OrchestratorProps = {
-  /** Custom instructions to override the default agent behavior */
-  instructions?: string;
   /** Placeholder text for the input field */
   placeholder?: string;
   /** Additional CSS classes */
@@ -27,25 +25,17 @@ type OrchestratorProps = {
  * <Orchestrator />
  *
  * @example
- * <Orchestrator
- *   instructions="Always explain which specialist you're using."
- *   placeholder="Ask anything..."
- * />
+ * <Orchestrator placeholder="Ask anything..." />
  */
 export function Orchestrator({
-  instructions,
   placeholder = "Ask about weather or math...",
   className,
 }: OrchestratorProps) {
   const [input, setInput] = useState("");
 
   const transport = useMemo(
-    () =>
-      new DefaultChatTransport({
-        api: "/api/agents/orchestrator",
-        body: instructions ? { instructions } : undefined,
-      }),
-    [instructions]
+    () => new DefaultChatTransport({ api: "/api/agents/orchestrator" }),
+    []
   );
 
   const { messages, sendMessage, status } = useChat<Message>({ transport });

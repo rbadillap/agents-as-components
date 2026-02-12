@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Weather } from "@/components/weather";
 import { Calculator } from "@/components/calculator";
 import { Orchestrator } from "@/components/orchestrator";
@@ -9,25 +8,17 @@ import { Orchestrator } from "@/components/orchestrator";
  * Demonstrates the "Agent as Component" pattern:
  * - Agents live in src/agents/ (server-side ToolLoopAgent)
  * - Components live in src/components/ (client-side useChat)
- * - Components accept props like instructions, placeholder, className
+ * - Components accept props like placeholder, className
  */
 export default function Home() {
   return (
     <main className="min-h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 p-8">
       <div className="max-w-5xl mx-auto">
-        <header className="mb-8 flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold mb-2">AI SDK Agents</h1>
-            <p className="text-neutral-500">
-              Exploring the Agent as Component pattern
-            </p>
-          </div>
-          <Link
-            href="/security"
-            className="px-3 py-1 text-sm bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900"
-          >
-            🔓 Security Lab
-          </Link>
+        <header className="mb-8">
+          <h1 className="text-2xl font-bold mb-2">AI SDK Agents</h1>
+          <p className="text-neutral-500">
+            Exploring the Agent as Component pattern
+          </p>
         </header>
 
         {/* Orchestrator - Full Width */}
@@ -90,15 +81,13 @@ export default function Home() {
           <h2 className="font-semibold mb-4">Component Props</h2>
           <pre className="bg-neutral-100 dark:bg-neutral-900 p-4 rounded-lg overflow-x-auto text-sm">
             {`<Weather
-  instructions="Custom system prompt..."
   placeholder="Custom input placeholder..."
   className="custom-styles"
 />
 
-<Calculator
-  instructions="You are a math tutor. Explain each step."
-  placeholder="Enter a problem..."
-/>`}
+<Calculator placeholder="Enter a problem..." />
+
+<Orchestrator className="flex flex-col h-full" />`}
           </pre>
         </section>
       </div>

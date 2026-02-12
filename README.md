@@ -10,10 +10,12 @@ Exploring composable AI agents with Vercel AI SDK.
 src/
 ├── agents/           # Server: agent definitions (ToolLoopAgent)
 │   ├── weather.ts
-│   └── calculator.ts
+│   ├── calculator.ts
+│   └── orchestrator.ts
 ├── components/       # Client: React components (useChat)
 │   ├── weather.tsx
-│   └── calculator.tsx
+│   ├── calculator.tsx
+│   └── orchestrator.tsx
 └── app/api/agents/   # API routes
 ```
 
@@ -37,14 +39,15 @@ Visit `http://localhost:3000`
 ```tsx
 import { Weather } from "@/components/weather";
 import { Calculator } from "@/components/calculator";
+import { Orchestrator } from "@/components/orchestrator";
 
-// Basic
+// Basic usage
 <Weather />
 <Calculator />
+<Orchestrator />
 
-// With custom instructions
-<Weather instructions="Include humidity in responses" />
-<Calculator instructions="Explain each step" />
+// With props
+<Weather placeholder="Enter a city..." className="h-full" />
 ```
 
 ## Key Dependencies
@@ -53,27 +56,9 @@ import { Calculator } from "@/components/calculator";
 - `@ai-sdk/react` - React hooks (useChat)
 - `@ai-sdk/gateway` - Vercel AI Gateway provider
 
-## Security Lab
-
-Visit `/security` to test prompt injection attacks.
-
-The `Assistant` component accepts `instructions` prop from clients, making it vulnerable to:
-- Instruction override attacks
-- Tool manipulation
-- System prompt leaks
-- Role hijacking
-
-**Mitigations explored:**
-1. Never expose instructions to clients
-2. Use allowlist of predefined variants
-3. Sandbox user instructions with boundaries
-4. Filter outputs for leaked secrets
-
 ## Exploration Areas
 
 - [x] Agent as Component pattern
-- [x] Props for customization (instructions, placeholder)
-- [x] Security: prompt injection via instructions prop
-- [x] Subagent composition
-- [x] Streaming tool results
-- [ ] Agent state persistence
+- [x] Subagent composition (orchestrator delegates to specialists)
+- [x] Streaming tool results (real-time tool state in UI)
+- [ ] Agent state

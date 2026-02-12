@@ -33,23 +33,16 @@ export const delegateCalculatorTool = tool({
   },
 });
 
-const defaultInstructions = `You are an orchestrator that routes tasks to specialists.
+export const orchestratorAgent = new ToolLoopAgent({
+  id: "orchestrator",
+  model: gateway("anthropic/claude-sonnet-4"),
+  instructions: `You are an orchestrator that routes tasks to specialists.
 - Weather questions → use delegateWeather tool
 - Math questions → use delegateCalculator tool
 - When a question needs both, call both tools and combine the results
-- Provide a unified, coherent response to the user`;
-
-export function createOrchestratorAgent(customInstructions?: string) {
-  return new ToolLoopAgent({
-    id: "orchestrator",
-    model: gateway("anthropic/claude-sonnet-4"),
-    instructions: customInstructions ?? defaultInstructions,
-    tools: {
-      delegateWeather: delegateWeatherTool,
-      delegateCalculator: delegateCalculatorTool,
-    },
-  });
-}
-
-// Default instance for simple usage
-export const orchestratorAgent = createOrchestratorAgent();
+- Provide a unified, coherent response to the user`,
+  tools: {
+    delegateWeather: delegateWeatherTool,
+    delegateCalculator: delegateCalculatorTool,
+  },
+});

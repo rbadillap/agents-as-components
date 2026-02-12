@@ -31,21 +31,14 @@ export const calculateTool = tool({
   },
 });
 
-const defaultInstructions = `You are a math assistant.
+export const calculatorAgent = new ToolLoopAgent({
+  id: "calculator",
+  model: gateway("anthropic/claude-sonnet-4"),
+  instructions: `You are a math assistant.
 - Use the calculate tool for any math operations
 - Show your work step by step
-- Round decimals to 2 places when appropriate`;
-
-export function createCalculatorAgent(customInstructions?: string) {
-  return new ToolLoopAgent({
-    id: "calculator",
-    model: gateway("anthropic/claude-sonnet-4"),
-    instructions: customInstructions ?? defaultInstructions,
-    tools: {
-      calculate: calculateTool,
-    },
-  });
-}
-
-// Default instance for simple usage
-export const calculatorAgent = createCalculatorAgent();
+- Round decimals to 2 places when appropriate`,
+  tools: {
+    calculate: calculateTool,
+  },
+});

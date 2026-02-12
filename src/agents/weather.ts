@@ -34,22 +34,15 @@ export const convertToCelsiusTool = tool({
   }),
 });
 
-const defaultInstructions = `You are a weather assistant.
+export const weatherAgent = new ToolLoopAgent({
+  id: "weather",
+  model: gateway("anthropic/claude-sonnet-4"),
+  instructions: `You are a weather assistant.
 - Get weather for any location
 - Always convert to Celsius when reporting
-- Be concise and friendly`;
-
-export function createWeatherAgent(customInstructions?: string) {
-  return new ToolLoopAgent({
-    id: "weather",
-    model: gateway("anthropic/claude-sonnet-4"),
-    instructions: customInstructions ?? defaultInstructions,
-    tools: {
-      weather: weatherTool,
-      convertToCelsius: convertToCelsiusTool,
-    },
-  });
-}
-
-// Default instance for simple usage
-export const weatherAgent = createWeatherAgent();
+- Be concise and friendly`,
+  tools: {
+    weather: weatherTool,
+    convertToCelsius: convertToCelsiusTool,
+  },
+});
