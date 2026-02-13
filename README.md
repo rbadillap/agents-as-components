@@ -3,6 +3,8 @@
 Exploring composable AI agents with Vercel AI SDK.
 
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frbadillap%2Fagents-as-components%2Ftree%2Fmain&env=AI_GATEWAY_API_KEY&envDescription=AI_GATEWAY_API_KEY)
+
 
 https://github.com/user-attachments/assets/7fdd8dbe-2dc1-4506-b2ee-998a6f94ecf7
 
