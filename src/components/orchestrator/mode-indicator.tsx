@@ -1,7 +1,13 @@
 "use client";
 
 import { useAgentMode } from "./context";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
+/**
+ * Displays the current agent mode (active/focus).
+ * Uses aria-live to announce mode changes to screen readers.
+ */
 export function ModeIndicator() {
   const agentMode = useAgentMode();
 
@@ -10,20 +16,26 @@ export function ModeIndicator() {
   const isFocus = agentMode.mode === "focus";
 
   return (
-    <div
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-300
-      ${
+    <Badge
+      variant="outline"
+      className={cn(
+        "gap-1.5 transition-all duration-300",
         isFocus
-          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-          : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-      }`}
+          ? "border-amber-300 bg-amber-100 text-amber-700 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+          : "border-green-300 bg-green-100 text-green-700 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400"
+      )}
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
     >
       <span
-        className={`w-2 h-2 rounded-full ${
+        className={cn(
+          "size-2 rounded-full",
           isFocus ? "bg-amber-500 animate-pulse" : "bg-green-500"
-        }`}
+        )}
+        aria-hidden="true"
       />
       <span>{isFocus ? "Gathering info" : "Ready"}</span>
-    </div>
+    </Badge>
   );
 }

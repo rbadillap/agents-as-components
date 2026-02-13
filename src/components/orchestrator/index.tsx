@@ -5,17 +5,18 @@ export {
   OrchestratorProvider,
   useOrchestrator,
   useAgentMode,
+  useActiveAgent,
   useSessionContext,
 } from "./context";
 export { ModeIndicator } from "./mode-indicator";
 export { SessionIndicator } from "./session-indicator";
+export { OrchestratorHeader } from "./header";
 export { OrchestratorMessages } from "./messages";
 export { OrchestratorInput } from "./input";
 
 // Composed component for simple usage
 import { OrchestratorProvider } from "./context";
-import { ModeIndicator } from "./mode-indicator";
-import { SessionIndicator } from "./session-indicator";
+import { OrchestratorHeader } from "./header";
 import { OrchestratorMessages } from "./messages";
 import { OrchestratorInput } from "./input";
 
@@ -25,32 +26,18 @@ type OrchestratorProps = {
 };
 
 /**
- * Orchestrator Component
- *
- * A pre-composed chat interface to the orchestrator agent.
- * For custom layouts, use the individual components with OrchestratorProvider.
- *
- * @example Simple usage
- * <Orchestrator placeholder="Ask anything..." />
- *
- * @example Composable usage
- * <OrchestratorProvider>
- *   <Header><ModeIndicator /></Header>
- *   <OrchestratorMessages />
- *   <OrchestratorInput />
- * </OrchestratorProvider>
+ * Orchestrator Component - Minimalist chat interface
  */
 export function Orchestrator({ placeholder, className }: OrchestratorProps) {
   return (
     <OrchestratorProvider>
       <div className={className}>
+        <OrchestratorHeader />
         <OrchestratorMessages />
-        <div className="mt-4 flex items-center gap-2">
-          <ModeIndicator />
-          <SessionIndicator />
-        </div>
-        <div className="mt-2">
-          <OrchestratorInput placeholder={placeholder} />
+        <div className="p-4 border-t border-border">
+          <div className="max-w-2xl mx-auto">
+            <OrchestratorInput placeholder={placeholder} />
+          </div>
         </div>
       </div>
     </OrchestratorProvider>

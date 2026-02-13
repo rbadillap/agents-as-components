@@ -1,10 +1,6 @@
 "use client";
 
-import { InferAgentUIMessage } from "ai";
-import type { calculatorAgent } from "@/agents/calculator";
 import { ChatAgent } from "./chat-agent";
-
-type Message = InferAgentUIMessage<typeof calculatorAgent>;
 
 type CalculatorProps = {
   /** Placeholder text for the input field */
@@ -29,13 +25,13 @@ export function Calculator({
   className,
 }: CalculatorProps) {
   return (
-    <ChatAgent<Message>
+    <ChatAgent
       api="/api/agents/calculator"
       placeholder={placeholder}
       className={className}
-      userMessageClass="bg-green-100 dark:bg-green-900 ml-8"
-      buttonClass="bg-green-600"
       loadingText="Calculating..."
+      emptyTitle="Math assistant"
+      emptyDescription="Ask me any math question"
     />
   );
 }

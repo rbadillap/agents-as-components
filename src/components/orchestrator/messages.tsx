@@ -2,29 +2,28 @@
 
 import { useOrchestrator } from "./context";
 import { MessageParts } from "../message-parts";
+import { ChatBubble, ChatEmpty, ChatContainer } from "@/components/chat";
 
 export function OrchestratorMessages() {
-  const { messages, isLoading } = useOrchestrator();
+  const { messages } = useOrchestrator();
 
   return (
-    <div className="flex-1 overflow-y-auto space-y-2">
-      {messages.map((message) => (
-        <div
-          key={message.id}
-          className={`p-2 rounded ${
-            message.role === "user"
-              ? "bg-purple-100 dark:bg-purple-900 ml-8"
-              : "bg-neutral-100 dark:bg-neutral-800 mr-8"
-          }`}
-        >
-          <MessageParts message={message} />
-        </div>
-      ))}
-      {isLoading && (
-        <div className="p-2 rounded bg-neutral-100 dark:bg-neutral-800 mr-8">
-          <p className="animate-pulse">Coordinating specialists...</p>
-        </div>
-      )}
-    </div>
+    <ChatContainer className="flex-1 min-h-0">
+      <div className="max-w-2xl mx-auto space-y-6 min-h-full flex flex-col">
+        {messages.length === 0 ? (
+          <ChatEmpty
+            title="What can I help you with?"
+            description="Ask about weather or do calculations"
+            className="flex-1"
+          />
+        ) : (
+          messages.map((message) => (
+            <ChatBubble key={message.id} role={message.role}>
+              <MessageParts message={message} />
+            </ChatBubble>
+          ))
+        )}
+      </div>
+    </ChatContainer>
   );
 }

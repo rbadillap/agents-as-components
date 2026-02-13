@@ -2,41 +2,41 @@
 
 import { DefaultChatTransport, UIMessage } from "ai";
 import { useChat } from "@ai-sdk/react";
-import { useState, useMemo, useCallback, ReactNode } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { MessageParts } from "./message-parts";
+import { ChatInput, ChatBubble, ChatEmpty, ChatContainer } from "./chat";
+import { Skeleton } from "./ui/skeleton";
+import { cn } from "@/lib/utils";
 
-type ChatAgentProps<TMessage extends UIMessage> = {
+type ChatAgentProps = {
   /** API endpoint for the agent */
   api: string;
   /** Placeholder text for the input field */
   placeholder?: string;
   /** Additional CSS classes */
   className?: string;
-  /** Color theme for user messages */
-  userMessageClass?: string;
-  /** Color theme for submit button */
-  buttonClass?: string;
   /** Loading text */
   loadingText?: string;
+  /** Empty state title */
+  emptyTitle?: string;
+  /** Empty state description */
+  emptyDescription?: string;
 };
-
-// Hoisted static JSX (rendering-hoist-jsx)
-const assistantMessageClass = "bg-neutral-100 dark:bg-neutral-800 mr-8";
 
 /**
  * Base Chat Agent Component
  *
- * Reusable chat interface for any agent. Reduces duplication across
- * Weather, Calculator, and other simple agent components.
+ * Reusable chat interface for any agent. Uses the shared chat
+ * components for consistent UI and accessibility.
  */
-export function ChatAgent<TMessage extends UIMessage>({
+export function ChatAgent({
   api,
   placeholder = "Type a message...",
   className,
-  userMessageClass = "bg-blue-100 dark:bg-blue-900 ml-8",
-  buttonClass = "bg-blue-600",
   loadingText = "Thinking...",
-}: ChatAgentProps<TMessage>) {
+  emptyTitle = "Start chatting",
+  emptyDescription = "Send a message to begin",
+}: ChatAgentProps) {
   const [input, setInput] = useState("");
 
   const transport = useMemo(
@@ -44,55 +44,51 @@ export function ChatAgent<TMessage extends UIMessage>({
     [api]
   );
 
-  const { messages, sendMessage, status } = useChat<TMessage>({ transport });
+  const { messages, sendMessage, status } = useChat({ transport });
 
   const isLoading = status === "submitted" || status === "streaming";
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!input.trim()) return;
-      sendMessage({ text: input });
-      setInput("");
-    },
-    [input, sendMessage]
-  );
+  const handleSubmit = useCallback(() => {
+    if (!input.trim()) return;
+    sendMessage({ text: input });
+    setInput("");
+  }, [input, sendMessage]);
+
+  const hasMessages = messages.length > 0;
 
   return (
-    <div className={className}>
-      <div className="flex-1 overflow-y-auto space-y-2">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`p-2 rounded ${
-              message.role === "user" ? userMessageClass : assistantMessageClass
-            }`}
-          >
-            <MessageParts message={message} />
-          </div>
-        ))}
-        {isLoading && (
-          <div className={`p-2 rounded ${assistantMessageClass}`}>
-            <p className="animate-pulse">{loadingText}</p>
-          </div>
-        )}
-      </div>
+    <div className={cn("flex flex-col", className)}>
+      {!hasMessages && !isLoading ? (
+        <ChatEmpty title={emptyTitle} description={emptyDescription} />
+      ) : (
+        <ChatContainer className="flex-1 min-h-0">
+          {messages.map((message) => (
+            <ChatBubble key={message.id} role={message.role}>
+              <MessageParts message={message} />
+            </ChatBubble>
+          ))}
+          {isLoading && (
+            <ChatBubble role="assistant">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4 rounded-full" />
+                <span className="text-sm text-muted-foreground animate-pulse">
+                  {loadingText}
+                </span>
+              </div>
+            </ChatBubble>
+          )}
+        </ChatContainer>
+      )}
 
-      <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
-        <input
+      <div className="mt-auto pt-3 border-t">
+        <ChatInput
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={setInput}
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
           placeholder={placeholder}
-          className="flex-1 p-2 border rounded dark:bg-neutral-800 dark:border-neutral-700"
         />
-        <button
-          type="submit"
-          disabled={isLoading}
-          className={`px-4 py-2 ${buttonClass} text-white rounded disabled:opacity-50`}
-        >
-          Send
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

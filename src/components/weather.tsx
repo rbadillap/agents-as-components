@@ -1,10 +1,6 @@
 "use client";
 
-import { InferAgentUIMessage } from "ai";
-import type { weatherAgent } from "@/agents/weather";
 import { ChatAgent } from "./chat-agent";
-
-type Message = InferAgentUIMessage<typeof weatherAgent>;
 
 type WeatherProps = {
   /** Placeholder text for the input field */
@@ -29,13 +25,13 @@ export function Weather({
   className,
 }: WeatherProps) {
   return (
-    <ChatAgent<Message>
+    <ChatAgent
       api="/api/agents/weather"
       placeholder={placeholder}
       className={className}
-      userMessageClass="bg-blue-100 dark:bg-blue-900 ml-8"
-      buttonClass="bg-blue-600"
-      loadingText="Thinking..."
+      loadingText="Checking weather..."
+      emptyTitle="Weather assistant"
+      emptyDescription="Ask me about weather in any city"
     />
   );
 }
