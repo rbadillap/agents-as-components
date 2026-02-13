@@ -2,6 +2,12 @@
 
 Exploring composable AI agents with Vercel AI SDK.
 
+
+
+https://github.com/user-attachments/assets/7fdd8dbe-2dc1-4506-b2ee-998a6f94ecf7
+
+
+
 ## The Analogy
 
 Can an AI agent be treated like a React component?
